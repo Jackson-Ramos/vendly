@@ -1,0 +1,12 @@
+.root {
+  padding: 40px 48px;
+}
+
+.title {
+  font-family: 'SF Pro Display', -apple-system, system-ui, 'Segoe UI', Roboto, sans-serif;
+  font-size: 40px;
+  font-weight: 600;
+  line-height: 1.15;
+  letter-spacing: -1.0px;
+  color: #f7f8f8;
+}

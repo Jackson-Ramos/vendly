@@ -1,0 +1,158 @@
+.root {
+  min-height: 100svh;
+  background-color: #010102;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  box-sizing: border-box;
+}
+
+.card {
+  width: 100%;
+  max-width: 400px;
+  background-color: #0f1011;
+  border: 1px solid #23252a;
+  border-radius: 12px;
+  padding: 40px 36px;
+  box-sizing: border-box;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 32px;
+}
+
+.brandName {
+  font-family: 'SF Pro Display', -apple-system, system-ui, 'Segoe UI', Roboto, sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: -0.3px;
+  color: #f7f8f8;
+}
+
+.headline {
+  font-family: 'SF Pro Display', -apple-system, system-ui, 'Segoe UI', Roboto, sans-serif;
+  font-size: 28px;
+  font-weight: 600;
+  line-height: 1.20;
+  letter-spacing: -0.6px;
+  color: #f7f8f8;
+  margin: 0 0 8px;
+}
+
+.subtitle {
+  font-family: 'SF Pro Display', -apple-system, system-ui, 'Segoe UI', Roboto, sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 1.50;
+  letter-spacing: -0.05px;
+  color: #8a8f98;
+  margin: 0 0 28px;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.label {
+  font-family: 'SF Pro Display', -apple-system, system-ui, 'Segoe UI', Roboto, sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.20;
+  color: #d0d6e0;
+}
+
+.input {
+  background-color: #0f1011;
+  color: #f7f8f8;
+  font-family: 'SF Pro Display', -apple-system, system-ui, 'Segoe UI', Roboto, sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 1.50;
+  letter-spacing: -0.05px;
+  border: 1px solid #23252a;
+  border-radius: 8px;
+  padding: 8px 12px;
+  width: 100%;
+  box-sizing: border-box;
+  outline: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.input::placeholder {
+  color: #62666d;
+}
+
+.input:hover {
+  border-color: #34343a;
+}
+
+.inputFocused {
+  border-color: #5e69d1;
+  box-shadow: 0 0 0 2px rgba(94, 105, 209, 0.50);
+}
+
+.btnPrimary {
+  margin-top: 4px;
+  background-color: #5e6ad2;
+  color: #ffffff;
+  font-family: 'SF Pro Display', -apple-system, system-ui, 'Segoe UI', Roboto, sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.20;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 14px;
+  width: 100%;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.btnPrimary:hover {
+  background-color: #828fff;
+}
+
+.btnPrimary:active {
+  background-color: #5e69d1;
+}
+
+.footer {
+  font-family: 'SF Pro Display', -apple-system, system-ui, 'Segoe UI', Roboto, sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.50;
+  color: #8a8f98;
+  text-align: center;
+  margin: 24px 0 0;
+}
+
+.link {
+  color: #5e6ad2;
+  cursor: pointer;
+  transition: color 0.15s ease;
+}
+
+.link:hover {
+  color: #828fff;
+}
+
+@media (max-width: 480px) {
+  .card {
+    padding: 28px 20px;
+  }
+  .headline {
+    font-size: 22px;
+    letter-spacing: -0.4px;
+  }
+}

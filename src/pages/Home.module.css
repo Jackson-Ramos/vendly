@@ -1,0 +1,124 @@
+.root {
+  min-height: 100svh;
+  background-color: #010102;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Body ────────────────────────────────────────────── */
+
+.body {
+  flex: 1;
+  display: flex;
+  min-height: 0;
+}
+
+/* ── Sidebar ─────────────────────────────────────────── */
+
+.sidebar {
+  width: 216px;
+  flex-shrink: 0;
+  background-color: #0f1011;
+  border-right: 1px solid #23252a;
+  padding: 8px 8px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  transition: width 0.2s ease;
+  overflow: hidden;
+}
+
+.sidebarCollapsed {
+  width: 52px;
+}
+
+/* ── Toggle ──────────────────────────────────────────── */
+
+.toggleBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  background: transparent;
+  border: 1px solid #23252a;
+  border-radius: 6px;
+  color: #62666d;
+  cursor: pointer;
+  align-self: flex-end;
+  margin-bottom: 8px;
+  flex-shrink: 0;
+  transition: background-color 0.12s ease, color 0.12s ease, border-color 0.12s ease;
+}
+
+.toggleBtn:hover {
+  background-color: #141516;
+  border-color: #34343a;
+  color: #8a8f98;
+}
+
+/* ── Nav List ────────────────────────────────────────── */
+
+.navList {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+}
+
+.navItem {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  padding: 7px 10px;
+  font-family: 'SF Pro Display', -apple-system, system-ui, 'Segoe UI', Roboto, sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.50;
+  color: #8a8f98;
+  cursor: pointer;
+  text-align: left;
+  white-space: nowrap;
+  transition: background-color 0.12s ease, color 0.12s ease;
+}
+
+.navItem:hover {
+  background-color: #141516;
+  color: #d0d6e0;
+}
+
+.navItemActive {
+  background-color: #141516;
+  color: #f7f8f8;
+  font-weight: 500;
+}
+
+.navItemActive svg {
+  color: #5e6ad2;
+}
+
+.navLabel {
+  overflow: hidden;
+}
+
+/* ── Bottom (Sair) ───────────────────────────────────── */
+
+.sidebarBottom {
+  border-top: 1px solid #23252a;
+  padding-top: 8px;
+  margin-top: 8px;
+  flex-shrink: 0;
+}
+
+/* ── Content ─────────────────────────────────────────── */
+
+.content {
+  flex: 1;
+  background-color: #010102;
+  min-height: 0;
+}
