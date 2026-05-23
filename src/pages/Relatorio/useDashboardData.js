@@ -15,7 +15,6 @@ export function useDashboardData(filters) {
     kpis: null,
     vendasPorGrupo: [],
     ranking: [],
-    evolucao: [],
   })
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -31,10 +30,9 @@ export function useDashboardData(filters) {
       fetch(`/api/dashboard/kpis${q}`,              { signal: ctrl.signal }).then(r => r.json()),
       fetch(`/api/dashboard/vendas-por-grupo${q}`,  { signal: ctrl.signal }).then(r => r.json()),
       fetch(`/api/dashboard/ranking-vendedores${q}`,{ signal: ctrl.signal }).then(r => r.json()),
-      fetch(`/api/dashboard/evolucao-mensal${q}`,   { signal: ctrl.signal }).then(r => r.json()),
     ])
-      .then(([kpis, vendasPorGrupo, ranking, evolucao]) => {
-        setData({ kpis, vendasPorGrupo, ranking, evolucao })
+      .then(([kpis, vendasPorGrupo, ranking]) => {
+        setData({ kpis, vendasPorGrupo, ranking })
         setLoading(false)
       })
       .catch(err => {

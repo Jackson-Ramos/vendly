@@ -111,4 +111,79 @@ router.get('/evolucao-mensal', (req, res) => {
   res.json(rows)
 })
 
+// Evolução diária. O parâmetro `periodo` (mes|semana) define a janela em torno
+// da última data que satisfaz os filtros: 'mes' = 1º ao último dia do mês
+// daquela data; 'semana' = 7 dias terminando nela. Os filtros do topo
+// (filial/vendedor/inicio/fim) continuam sendo aplicados — dias fora deles
+// retornam 0.
+router.get('/evolucao-diaria', (req, res) => {
+  const periodo = req.query.periodo === 'semana' ? 'semana' : 'mes'
+
+  // `mes` (YYYY-MM) é opcional e só faz sentido com periodo=mes: ancora a janela
+  // num mês específico (drill-down vindo do gráfico anual). Sem ele, ancoramos
+  // na última data que casa com os filtros.
+  let y, m, d
+  if (periodo === 'mes' && /^\d{4}-\d{2}$/.test(req.query.mes || '')) {
+    y = Number(req.query.mes.slice(0, 4))
+    m = Number(req.query.mes.slice(5, 7))
+    d = 1
+  } else {
+    const { sql: anchorWhere, params: anchorParams } = buildWhere(req.query)
+    const anchor = db
+      .prepare(`
+        SELECT MAX(substr(v.Data,7,4)||substr(v.Data,4,2)||substr(v.Data,1,2)) AS k
+        FROM vendas_2025 v
+        ${anchorWhere}
+      `)
+      .get(anchorParams)
+
+    if (!anchor?.k) return res.json([])
+
+    y = Number(anchor.k.slice(0, 4))
+    m = Number(anchor.k.slice(4, 6))
+    d = Number(anchor.k.slice(6, 8))
+  }
+
+  const pad = n => String(n).padStart(2, '0')
+  const toKey = dt => `${dt.getUTCFullYear()}${pad(dt.getUTCMonth() + 1)}${pad(dt.getUTCDate())}`
+
+  const days = []
+  if (periodo === 'semana') {
+    const end = new Date(Date.UTC(y, m - 1, d))
+    for (let i = 6; i >= 0; i--) {
+      const dt = new Date(end)
+      dt.setUTCDate(end.getUTCDate() - i)
+      days.push(toKey(dt))
+    }
+  } else {
+    const last = new Date(Date.UTC(y, m, 0)).getUTCDate()
+    for (let dd = 1; dd <= last; dd++) {
+      days.push(`${y}${pad(m)}${pad(dd)}`)
+    }
+  }
+
+  const startKey = days[0]
+  const endKey = days[days.length - 1]
+
+  const { sql: where, params } = buildWhere(req.query)
+  const dateClause =
+    `substr(v.Data,7,4)||substr(v.Data,4,2)||substr(v.Data,1,2) >= @windowStart AND ` +
+    `substr(v.Data,7,4)||substr(v.Data,4,2)||substr(v.Data,1,2) <= @windowEnd`
+  const finalWhere = where ? `${where} AND ${dateClause}` : `WHERE ${dateClause}`
+
+  const rows = db
+    .prepare(`
+      SELECT
+        substr(v.Data,7,4)||substr(v.Data,4,2)||substr(v.Data,1,2) AS dia,
+        SUM(v.VL_Total_Liquido) AS vendaLiquida
+      FROM vendas_2025 v
+      ${finalWhere}
+      GROUP BY dia
+    `)
+    .all({ ...params, windowStart: startKey, windowEnd: endKey })
+
+  const map = new Map(rows.map(r => [r.dia, r.vendaLiquida]))
+  res.json(days.map(k => ({ dia: k, vendaLiquida: map.get(k) || 0 })))
+})
+
 export default router

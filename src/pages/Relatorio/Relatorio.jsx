@@ -13,7 +13,7 @@ export default function Relatorio() {
   const [filters, setFilters] = useState(EMPTY_FILTERS)
   const meta = useFiltersMetadata()
   const memoFilters = useMemo(() => filters, [filters.filial, filters.vendedor, filters.inicio, filters.fim])
-  const { kpis, vendasPorGrupo, ranking, evolucao, loading, error } = useDashboardData(memoFilters)
+  const { kpis, vendasPorGrupo, ranking, loading, error } = useDashboardData(memoFilters)
 
   function handleChange(patch) {
     setFilters(prev => ({ ...prev, ...patch }))
@@ -37,7 +37,7 @@ export default function Relatorio() {
         <KpiCards kpis={kpis} />
 
         <div className={styles.row2}>
-          <EvolucaoMensalChart data={evolucao} />
+          <EvolucaoMensalChart filters={memoFilters} />
           <VendasPorGrupoTable data={vendasPorGrupo} />
         </div>
 

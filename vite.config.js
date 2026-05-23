@@ -6,8 +6,8 @@ export default defineConfig({
   plugins: [react()],
   server: {
     host: "0.0.0.0",
-    port: 8080,
-    allowedHosts: ["teste.vendly.fun"],
+    port: 5173,
+    allowedHosts: ["teste.vendly.fun", "app.vendly.fun"],
     proxy: {
       '/api': 'http://localhost:3001'
     }
