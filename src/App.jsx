@@ -1,13 +1,19 @@
-import { useState } from 'react'
+import { Routes, Route, Navigate } from 'react-router-dom'
 import Login from './pages/Login'
 import Home from './pages/Home'
+import Vendas from './pages/Vendas'
+import Relatorio from './pages/Relatorio/Relatorio'
 
 export default function App() {
-  const [page, setPage] = useState('login')
-
-  if (page === 'home') {
-    return <Home onLogout={() => setPage('login')} />
-  }
-
-  return <Login onLogin={() => setPage('home')} />
+  return (
+    <Routes>
+      <Route path="/login" element={<Login />} />
+      <Route path="/" element={<Home />}>
+        <Route index element={<Navigate to="vendas" replace />} />
+        <Route path="vendas" element={<Vendas />} />
+        <Route path="relatorio" element={<Relatorio />} />
+      </Route>
+      <Route path="*" element={<Navigate to="/login" replace />} />
+    </Routes>
+  )
 }

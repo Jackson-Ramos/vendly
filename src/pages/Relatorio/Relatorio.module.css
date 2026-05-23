@@ -1,0 +1,333 @@
+.root {
+  padding: 20px 32px;
+  font-family: 'SF Pro Display', -apple-system, system-ui, 'Segoe UI', Roboto, sans-serif;
+  color: #f7f8f8;
+}
+
+/* ── Header ──────────────────────────────────────────── */
+
+.header {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+  flex-wrap: wrap;
+  margin-bottom: 28px;
+}
+
+.title {
+  font-size: 22px;
+  font-weight: 600;
+  line-height: 1.15;
+  letter-spacing: -0.4px;
+  margin: 0;
+  white-space: nowrap;
+}
+
+/* ── Filters Bar ─────────────────────────────────────── */
+
+.filtersBar {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  align-items: flex-end;
+}
+
+.filterField {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.filterLabel {
+  font-size: 11px;
+  font-weight: 500;
+  color: #8a8f98;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.select,
+.input {
+  background-color: #0f1011;
+  border: 1px solid #23252a;
+  border-radius: 6px;
+  padding: 7px 10px;
+  font-family: inherit;
+  font-size: 14px;
+  color: #f7f8f8;
+  outline: none;
+  transition: border-color 0.12s ease, background-color 0.12s ease;
+  min-width: 0;
+}
+
+.select { width: 220px; }
+.input  { width: 150px; }
+
+.select:hover,
+.input:hover {
+  border-color: #34343a;
+}
+
+.select:focus,
+.input:focus {
+  border-color: #5e6ad2;
+}
+
+.clearBtn {
+  background: transparent;
+  border: 1px solid #23252a;
+  border-radius: 6px;
+  padding: 7px 14px;
+  font-family: inherit;
+  font-size: 14px;
+  color: #8a8f98;
+  cursor: pointer;
+  transition: background-color 0.12s ease, color 0.12s ease, border-color 0.12s ease;
+}
+
+.clearBtn:hover {
+  background-color: #141516;
+  border-color: #34343a;
+  color: #d0d6e0;
+}
+
+/* ── Body Layout ─────────────────────────────────────── */
+
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  transition: opacity 0.15s ease;
+}
+
+.bodyLoading {
+  opacity: 0.55;
+}
+
+.row2 {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+  gap: 20px;
+}
+
+@media (max-width: 1100px) {
+  .row2 { grid-template-columns: 1fr; }
+}
+
+/* ── KPI Cards ───────────────────────────────────────── */
+
+.kpiGrid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 16px;
+}
+
+@media (max-width: 1200px) {
+  .kpiGrid { grid-template-columns: repeat(3, 1fr); }
+}
+
+@media (max-width: 700px) {
+  .kpiGrid { grid-template-columns: repeat(2, 1fr); }
+}
+
+.kpiCard {
+  background-color: #0f1011;
+  border: 1px solid #23252a;
+  border-radius: 10px;
+  padding: 18px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.kpiLabel {
+  font-size: 12px;
+  font-weight: 500;
+  color: #8a8f98;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.kpiValue {
+  font-size: 26px;
+  font-weight: 600;
+  letter-spacing: -0.6px;
+  color: #f7f8f8;
+}
+
+/* ── Generic Card ────────────────────────────────────── */
+
+.card {
+  background-color: #0f1011;
+  border: 1px solid #23252a;
+  border-radius: 10px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+
+.cardTitle {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #f7f8f8;
+  letter-spacing: -0.2px;
+}
+
+/* ── Chart ───────────────────────────────────────────── */
+
+.chartWrapper {
+  height: 280px;
+  width: 100%;
+}
+
+.chartTooltip {
+  background-color: #141516;
+  border: 1px solid #34343a;
+  border-radius: 6px;
+  padding: 8px 10px;
+  font-size: 12px;
+}
+
+.chartTooltipLabel {
+  color: #8a8f98;
+  margin-bottom: 2px;
+}
+
+.chartTooltipValue {
+  color: #f7f8f8;
+  font-weight: 600;
+}
+
+/* ── Table ───────────────────────────────────────────── */
+
+.tableScroll {
+  max-height: 360px;
+  overflow-y: auto;
+  margin: -4px;
+  padding: 4px;
+  scrollbar-width: thin;
+  scrollbar-color: #2a2d33 transparent;
+}
+
+.tableScroll::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.tableScroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.tableScroll::-webkit-scrollbar-thumb {
+  background-color: #2a2d33;
+  border-radius: 3px;
+}
+
+.tableScroll::-webkit-scrollbar-thumb:hover {
+  background-color: #3a3d44;
+}
+
+.tableScroll::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.table thead th {
+  position: sticky;
+  top: 0;
+  background-color: #0f1011;
+  color: #8a8f98;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  font-size: 11px;
+  padding: 8px 10px;
+  border-bottom: 1px solid #23252a;
+  z-index: 1;
+}
+
+.thLeft  { text-align: left; }
+.thRight { text-align: right; }
+.thRank  { text-align: left; width: 40px; }
+
+.table tbody td {
+  padding: 9px 10px;
+  border-bottom: 1px solid #141516;
+  color: #d0d6e0;
+  vertical-align: middle;
+}
+
+.table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.table tbody tr:hover {
+  background-color: #141516;
+}
+
+.tdRight { text-align: right; font-variant-numeric: tabular-nums; }
+
+.rank {
+  color: #62666d;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Vendas por Grupo: bar visual + name */
+.grupoCell {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.grupoName {
+  color: #f7f8f8;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.bar {
+  height: 3px;
+  background-color: #1a1c1f;
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.barFill {
+  height: 100%;
+  background-color: #5e6ad2;
+  border-radius: 2px;
+  transition: width 0.3s ease;
+}
+
+/* ── States ──────────────────────────────────────────── */
+
+.empty {
+  text-align: center;
+  color: #62666d;
+  padding: 28px 12px;
+  font-size: 13px;
+}
+
+.errorBanner {
+  background-color: #2a1414;
+  border: 1px solid #4a1d1d;
+  color: #f0a0a0;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  margin-bottom: 16px;
+}

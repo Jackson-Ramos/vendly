@@ -1,6 +1,5 @@
 import { useState } from 'react'
-import Vendas from './Vendas'
-import Relatorio from './Relatorio'
+import { NavLink, Outlet, useNavigate } from 'react-router-dom'
 import styles from './Home.module.css'
 
 
@@ -51,13 +50,13 @@ function IconChevronRight() {
 }
 
 const NAV_ITEMS = [
-  { id: 'vendas',    label: 'Vendas',    Icon: IconVendas },
-  { id: 'relatorio', label: 'Relatório', Icon: IconRelatorio },
+  { to: 'vendas',    label: 'Vendas',    Icon: IconVendas },
+  { to: 'relatorio', label: 'Relatório', Icon: IconRelatorio },
 ]
 
-export default function Home({ onLogout }) {
-  const [activePage, setActivePage] = useState('vendas')
+export default function Home() {
   const [expanded, setExpanded] = useState(true)
+  const navigate = useNavigate()
 
   return (
     <div className={styles.root}>
@@ -72,16 +71,18 @@ export default function Home({ onLogout }) {
           </button>
 
           <ul className={styles.navList}>
-            {NAV_ITEMS.map(({ id, label, Icon }) => (
-              <li key={id}>
-                <button
-                  className={`${styles.navItem} ${activePage === id ? styles.navItemActive : ''}`}
-                  onClick={() => setActivePage(id)}
+            {NAV_ITEMS.map(({ to, label, Icon }) => (
+              <li key={to}>
+                <NavLink
+                  to={to}
+                  className={({ isActive }) =>
+                    `${styles.navItem} ${isActive ? styles.navItemActive : ''}`
+                  }
                   title={!expanded ? label : undefined}
                 >
                   <Icon />
                   {expanded && <span className={styles.navLabel}>{label}</span>}
-                </button>
+                </NavLink>
               </li>
             ))}
           </ul>
@@ -89,7 +90,7 @@ export default function Home({ onLogout }) {
           <div className={styles.sidebarBottom}>
             <button
               className={styles.navItem}
-              onClick={onLogout}
+              onClick={() => navigate('/login')}
               title={!expanded ? 'Sair' : undefined}
             >
               <IconLogout />
@@ -99,8 +100,7 @@ export default function Home({ onLogout }) {
         </aside>
 
         <main className={styles.content}>
-          {activePage === 'vendas'    && <Vendas />}
-          {activePage === 'relatorio' && <Relatorio />}
+          <Outlet />
         </main>
       </div>
     </div>

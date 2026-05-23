@@ -84,6 +84,7 @@
   cursor: pointer;
   text-align: left;
   white-space: nowrap;
+  text-decoration: none;
   transition: background-color 0.12s ease, color 0.12s ease;
 }
 

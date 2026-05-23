@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import styles from './Login.module.css'
 
 function DashboardLogo() {
@@ -12,15 +13,16 @@ function DashboardLogo() {
   )
 }
 
-export default function Login({ onLogin }) {
+export default function Login() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [emailFocused, setEmailFocused] = useState(false)
   const [passwordFocused, setPasswordFocused] = useState(false)
+  const navigate = useNavigate()
 
   function handleSubmit(e) {
     e.preventDefault()
-    onLogin()
+    navigate('/vendas')
   }
 
   return (
