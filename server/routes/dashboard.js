@@ -112,21 +112,26 @@ router.get('/evolucao-mensal', (req, res) => {
 })
 
 // Evolução diária. O parâmetro `periodo` (mes|semana) define a janela em torno
-// da última data que satisfaz os filtros: 'mes' = 1º ao último dia do mês
-// daquela data; 'semana' = 7 dias terminando nela. Os filtros do topo
-// (filial/vendedor/inicio/fim) continuam sendo aplicados — dias fora deles
-// retornam 0.
+// de uma data âncora: 'mes' = 1º ao último dia do mês; 'semana' = janela
+// domingo–sábado contendo a data. Sem âncora explícita, usamos a última data
+// que casa com os filtros. Os filtros do topo (filial/vendedor/inicio/fim)
+// continuam sendo aplicados — dias fora deles retornam 0.
 router.get('/evolucao-diaria', (req, res) => {
   const periodo = req.query.periodo === 'semana' ? 'semana' : 'mes'
 
-  // `mes` (YYYY-MM) é opcional e só faz sentido com periodo=mes: ancora a janela
-  // num mês específico (drill-down vindo do gráfico anual). Sem ele, ancoramos
-  // na última data que casa com os filtros.
+  // Âncoras explícitas:
+  //   mes=YYYY-MM      → 1º do mês indicado
+  //   semana=YYYY-MM-DD → sábado final da janela (a janela é o domingo–sábado terminando nessa data)
+  // Sem âncora, usamos MAX(Data) do recorte filtrado.
   let y, m, d
   if (periodo === 'mes' && /^\d{4}-\d{2}$/.test(req.query.mes || '')) {
     y = Number(req.query.mes.slice(0, 4))
     m = Number(req.query.mes.slice(5, 7))
     d = 1
+  } else if (periodo === 'semana' && /^\d{4}-\d{2}-\d{2}$/.test(req.query.semana || '')) {
+    y = Number(req.query.semana.slice(0, 4))
+    m = Number(req.query.semana.slice(5, 7))
+    d = Number(req.query.semana.slice(8, 10))
   } else {
     const { sql: anchorWhere, params: anchorParams } = buildWhere(req.query)
     const anchor = db
@@ -142,6 +147,18 @@ router.get('/evolucao-diaria', (req, res) => {
     y = Number(anchor.k.slice(0, 4))
     m = Number(anchor.k.slice(4, 6))
     d = Number(anchor.k.slice(6, 8))
+
+    // Para 'semana', alinhamos a janela ao sábado da semana Dom-Sáb contendo
+    // a âncora — assim o intervalo retornado bate com as opções do seletor
+    // no frontend (todas começam num domingo).
+    if (periodo === 'semana') {
+      const anchorDate = new Date(Date.UTC(y, m - 1, d))
+      const daysToSat = (6 - anchorDate.getUTCDay() + 7) % 7
+      anchorDate.setUTCDate(anchorDate.getUTCDate() + daysToSat)
+      y = anchorDate.getUTCFullYear()
+      m = anchorDate.getUTCMonth() + 1
+      d = anchorDate.getUTCDate()
+    }
   }
 
   const pad = n => String(n).padStart(2, '0')
