@@ -202,6 +202,34 @@
   white-space: nowrap;
 }
 
+.chartPeriodSelect {
+  background-color: #0a0b0c;
+  border: 1px solid #23252a;
+  border-radius: 6px;
+  padding: 4px 8px;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  color: #d0d6e0;
+  outline: none;
+  cursor: pointer;
+  transition: border-color 0.12s ease, color 0.12s ease;
+}
+
+.chartPeriodSelect:hover {
+  border-color: #34343a;
+  color: #f7f8f8;
+}
+
+.chartPeriodSelect:focus {
+  border-color: #5e6ad2;
+}
+
+.chartPeriodSelect option {
+  background-color: #0f1011;
+  color: #f7f8f8;
+}
+
 .periodToggle {
   display: inline-flex;
   background-color: #0a0b0c;

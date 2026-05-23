@@ -18,7 +18,7 @@ export function pct(value) {
   return `${(value ?? 0).toFixed(1)}%`
 }
 
-const MES_LABELS = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez']
+export const MES_LABELS = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez']
 
 export function mesLabel(yyyymm) {
   if (!yyyymm) return ''

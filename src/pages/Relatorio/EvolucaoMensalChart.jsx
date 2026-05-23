@@ -11,7 +11,36 @@ import {
   Tooltip,
 } from 'recharts'
 import styles from './Relatorio.module.css'
-import { brl, mesLabel } from './format'
+import { brl, mesLabel, MES_LABELS } from './format'
+
+const pad2 = n => String(n).padStart(2, '0')
+
+function monthOptions(year) {
+  return MES_LABELS.map((label, i) => ({
+    value: `${year}-${pad2(i + 1)}`,
+    label,
+  }))
+}
+
+// Semanas Dom-Sáb que tocam o ano. `value` é o sábado final (YYYY-MM-DD) —
+// o backend recebe esse parâmetro e devolve o domingo–sábado contendo essa data.
+function weekOptions(year) {
+  const weeks = []
+  const d = new Date(Date.UTC(year, 0, 1))
+  d.setUTCDate(d.getUTCDate() - d.getUTCDay())
+  while (true) {
+    const start = new Date(d)
+    const end = new Date(d)
+    end.setUTCDate(end.getUTCDate() + 6)
+    if (start.getUTCFullYear() > year) break
+    weeks.push({
+      value: `${end.getUTCFullYear()}-${pad2(end.getUTCMonth() + 1)}-${pad2(end.getUTCDate())}`,
+      label: `${pad2(start.getUTCDate())}/${pad2(start.getUTCMonth() + 1)} – ${pad2(end.getUTCDate())}/${pad2(end.getUTCMonth() + 1)}`,
+    })
+    d.setUTCDate(d.getUTCDate() + 7)
+  }
+  return weeks
+}
 
 function compactBRL(value) {
   if (Math.abs(value) >= 1_000_000) return `R$ ${(value / 1_000_000).toFixed(1)}M`
@@ -75,15 +104,17 @@ const PERIODS = [
 export default function EvolucaoMensalChart({ filters }) {
   const [periodo, setPeriodo] = useState('ano')
   const [selectedMonth, setSelectedMonth] = useState(null)
+  const [selectedWeek, setSelectedWeek] = useState(null)
   const [data, setData] = useState([])
 
-  // Invalida o mês selecionado (drill-down) quando filtros mudam. Faz isso no
-  // render — padrão recomendado pelo React em vez de useEffect com setState.
+  // Invalida o mês/semana selecionados (drill-down) quando filtros mudam. Faz
+  // isso no render — padrão recomendado pelo React em vez de useEffect com setState.
   const filterSig = `${filters.filial}|${filters.vendedor}|${filters.inicio}|${filters.fim}`
   const [prevSig, setPrevSig] = useState(filterSig)
   if (filterSig !== prevSig) {
     setPrevSig(filterSig)
     setSelectedMonth(null)
+    setSelectedWeek(null)
   }
 
   // Limpa `data` quando o período muda — o shape difere entre 'ano' ({mes,...})
@@ -100,6 +131,7 @@ export default function EvolucaoMensalChart({ filters }) {
 
   function changePeriod(p) {
     if (p !== 'mes') setSelectedMonth(null)
+    if (p !== 'semana') setSelectedWeek(null)
     setPeriodo(p)
   }
 
@@ -117,6 +149,7 @@ export default function EvolucaoMensalChart({ filters }) {
     } else {
       const extra = { periodo }
       if (periodo === 'mes' && selectedMonth) extra.mes = selectedMonth
+      if (periodo === 'semana' && selectedWeek) extra.semana = selectedWeek
       url = `/api/dashboard/evolucao-diaria${buildQuery(filters, extra)}`
     }
     fetch(url, { signal: ctrl.signal })
@@ -124,20 +157,36 @@ export default function EvolucaoMensalChart({ filters }) {
       .then(setData)
       .catch(err => { if (err.name !== 'AbortError') console.error(err) })
     return () => ctrl.abort()
-  }, [filters.filial, filters.vendedor, filters.inicio, filters.fim, periodo, selectedMonth])
+  }, [filters.filial, filters.vendedor, filters.inicio, filters.fim, periodo, selectedMonth, selectedWeek])
 
-  let periodoLabel = null
-  if (displayData.length > 0) {
-    if (periodo === 'mes') {
-      const first = displayData[0].dia
-      const ym = `${first.slice(0, 4)}-${first.slice(4, 6)}`
-      periodoLabel = `${mesLabel(ym)} ${first.slice(0, 4)}`
-    } else if (periodo === 'semana') {
-      const f = displayData[0].dia
-      const l = displayData[displayData.length - 1].dia
-      periodoLabel = `${f.slice(6, 8)}/${f.slice(4, 6)} – ${l.slice(6, 8)}/${l.slice(4, 6)}/${l.slice(0, 4)}`
+  // Valor atualmente exibido no seletor: prioriza a seleção explícita; senão,
+  // deriva do próprio displayData (a âncora do backend define o período).
+  let currentMesValue = ''
+  if (periodo === 'mes') {
+    if (selectedMonth) {
+      currentMesValue = selectedMonth
+    } else if (displayData.length > 0) {
+      const d0 = displayData[0].dia
+      currentMesValue = `${d0.slice(0, 4)}-${d0.slice(4, 6)}`
     }
   }
+
+  let currentSemanaValue = ''
+  if (periodo === 'semana') {
+    if (selectedWeek) {
+      currentSemanaValue = selectedWeek
+    } else if (displayData.length > 0) {
+      const dn = displayData[displayData.length - 1].dia
+      currentSemanaValue = `${dn.slice(0, 4)}-${dn.slice(4, 6)}-${dn.slice(6, 8)}`
+    }
+  }
+
+  const optionYear =
+    periodo === 'mes' && currentMesValue
+      ? Number(currentMesValue.slice(0, 4))
+      : periodo === 'semana' && currentSemanaValue
+      ? Number(currentSemanaValue.slice(0, 4))
+      : new Date().getFullYear()
 
   let semanaData = displayData
   if (periodo === 'semana' && displayData.length) {
@@ -161,7 +210,32 @@ export default function EvolucaoMensalChart({ filters }) {
       <div className={styles.chartHeader}>
         <div className={styles.chartTitleGroup}>
           <h2 className={styles.cardTitle}>Evolução de Vendas</h2>
-          {periodoLabel && <span className={styles.chartPeriodLabel}>{periodoLabel}</span>}
+          {periodo === 'mes' && (
+            <select
+              className={styles.chartPeriodSelect}
+              value={currentMesValue}
+              onChange={e => setSelectedMonth(e.target.value)}
+              aria-label="Selecionar mês"
+            >
+              {!currentMesValue && <option value="" disabled>Carregando…</option>}
+              {monthOptions(optionYear).map(opt => (
+                <option key={opt.value} value={opt.value}>{opt.label} {optionYear}</option>
+              ))}
+            </select>
+          )}
+          {periodo === 'semana' && (
+            <select
+              className={styles.chartPeriodSelect}
+              value={currentSemanaValue}
+              onChange={e => setSelectedWeek(e.target.value)}
+              aria-label="Selecionar semana"
+            >
+              {!currentSemanaValue && <option value="" disabled>Carregando…</option>}
+              {weekOptions(optionYear).map(opt => (
+                <option key={opt.value} value={opt.value}>{opt.label}</option>
+              ))}
+            </select>
+          )}
         </div>
         <div className={styles.periodToggle} role="tablist">
           {PERIODS.map(p => (
