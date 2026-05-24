@@ -47,19 +47,42 @@ router.get('/kpis', (req, res) => {
   })
 })
 
+// `dim` define a dimensão da agregação: grupo (padrão), cor ou tamanho.
+// Todas retornam o mesmo shape ({codigo, descricao, valor, percentual}) para
+// que o frontend possa alternar sem mexer no render.
+const VENDAS_POR_DIM = {
+  grupo: {
+    join:    'INNER JOIN Grupo g ON g.COD_GRUPO = p.COD_GRUPO',
+    codigo:  'g.COD_GRUPO',
+    descricao: 'g.DESCRICAO',
+  },
+  cor: {
+    join:    'LEFT JOIN Cores c ON c.CodCor = p.CodCor',
+    codigo:  'p.CodCor',
+    descricao: "COALESCE(c.DESCRICAO, '(sem cor)')",
+  },
+  tamanho: {
+    join:    'LEFT JOIN Tamanho t ON t.CodTamanho = p.CODTAMANHO',
+    codigo:  'p.CODTAMANHO',
+    descricao: "COALESCE(t.DESCRICAO, '(sem tamanho)')",
+  },
+}
+
 router.get('/vendas-por-grupo', (req, res) => {
+  const dim = VENDAS_POR_DIM[req.query.dim] ? req.query.dim : 'grupo'
+  const cfg = VENDAS_POR_DIM[dim]
   const { sql: where, params } = buildWhere(req.query)
   const rows = db
     .prepare(`
       SELECT
-        g.COD_GRUPO        AS codGrupo,
-        g.DESCRICAO        AS grupo,
+        ${cfg.codigo}    AS codigo,
+        ${cfg.descricao} AS descricao,
         SUM(v.VL_Total_Liquido) AS valor
       FROM vendas_2025 v
       INNER JOIN Produtos p ON p.Cod_Prod = v.COD_PROD
-      INNER JOIN Grupo g    ON g.COD_GRUPO = p.COD_GRUPO
+      ${cfg.join}
       ${where}
-      GROUP BY g.COD_GRUPO, g.DESCRICAO
+      GROUP BY ${cfg.codigo}, ${cfg.descricao}
       ORDER BY valor DESC
     `)
     .all(params)

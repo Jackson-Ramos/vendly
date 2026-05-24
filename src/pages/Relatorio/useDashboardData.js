@@ -13,7 +13,6 @@ function toQuery(filters) {
 export function useDashboardData(filters) {
   const [data, setData] = useState({
     kpis: null,
-    vendasPorGrupo: [],
     ranking: [],
   })
   const [loading, setLoading] = useState(true)
@@ -33,11 +32,10 @@ export function useDashboardData(filters) {
 
     Promise.all([
       fetch(`/api/dashboard/kpis${q}`,              { signal: ctrl.signal }).then(r => r.json()),
-      fetch(`/api/dashboard/vendas-por-grupo${q}`,  { signal: ctrl.signal }).then(r => r.json()),
       fetch(`/api/dashboard/ranking-vendedores${q}`,{ signal: ctrl.signal }).then(r => r.json()),
     ])
-      .then(([kpis, vendasPorGrupo, ranking]) => {
-        setData({ kpis, vendasPorGrupo, ranking })
+      .then(([kpis, ranking]) => {
+        setData({ kpis, ranking })
         setLoading(false)
       })
       .catch(err => {
