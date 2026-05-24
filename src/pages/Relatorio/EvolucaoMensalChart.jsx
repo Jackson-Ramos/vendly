@@ -312,11 +312,10 @@ export default function EvolucaoMensalChart({ filters }) {
                 dataKey="dia"
                 tickFormatter={diaTickMes}
                 stroke="#62666d"
-                tick={{ fill: '#8a8f98', fontSize: 12 }}
+                tick={{ fill: '#8a8f98', fontSize: 11 }}
                 axisLine={{ stroke: '#23252a' }}
                 tickLine={false}
-                interval="preserveStartEnd"
-                minTickGap={12}
+                interval={0}
               />
               <YAxis
                 tickFormatter={compactBRL}
