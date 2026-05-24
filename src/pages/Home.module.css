@@ -123,3 +123,67 @@
   background-color: #010102;
   min-height: 0;
 }
+
+/* ── Tablet/Mobile: sidebar vira bottom nav só com ícones ── */
+
+@media (max-width: 1024px) {
+  .sidebar,
+  .sidebarCollapsed {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    height: auto;
+    flex-direction: row;
+    align-items: center;
+    padding: 6px 10px;
+    padding-bottom: calc(6px + env(safe-area-inset-bottom, 0px));
+    border-right: none;
+    border-top: 1px solid #23252a;
+    overflow: visible;
+    z-index: 50;
+    transition: none;
+  }
+
+  .toggleBtn {
+    display: none;
+  }
+
+  .navList {
+    flex-direction: row;
+    justify-content: space-around;
+    flex: 1;
+    gap: 4px;
+  }
+
+  .navItem {
+    flex-direction: column;
+    justify-content: center;
+    gap: 0;
+    padding: 10px 14px;
+    width: auto;
+  }
+
+  .navItem svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  .navLabel {
+    display: none;
+  }
+
+  .sidebarBottom {
+    border-top: none;
+    border-left: 1px solid #23252a;
+    padding-top: 0;
+    padding-left: 8px;
+    margin-top: 0;
+    margin-left: 4px;
+  }
+
+  .content {
+    padding-bottom: 68px;
+  }
+}
