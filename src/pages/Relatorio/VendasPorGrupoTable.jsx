@@ -1,8 +1,11 @@
+import { useState } from 'react'
 import styles from './Relatorio.module.css'
 import { brl } from './format'
+import GrupoDetalhesModal from './GrupoDetalhesModal'
 
-export default function VendasPorGrupoTable({ data }) {
+export default function VendasPorGrupoTable({ data, filters }) {
   const max = data[0]?.percentual ?? 0
+  const [openGrupo, setOpenGrupo] = useState(null)
 
   return (
     <section className={styles.card}>
@@ -24,7 +27,21 @@ export default function VendasPorGrupoTable({ data }) {
               <tr key={g.codGrupo}>
                 <td>
                   <div className={styles.grupoCell}>
-                    <span className={styles.grupoName}>{g.grupo}</span>
+                    <div className={styles.grupoNameRow}>
+                      <button
+                        type="button"
+                        className={styles.grupoExpandBtn}
+                        onClick={() => setOpenGrupo(g)}
+                        aria-label={`Ver detalhes de ${g.grupo}`}
+                        title="Ver detalhes"
+                      >
+                        <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+                          <path d="M2 2h3M2 2v3M10 2H7M10 2v3M2 10h3M2 10V7M10 10H7M10 10V7"
+                                stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+                        </svg>
+                      </button>
+                      <span className={styles.grupoName}>{g.grupo}</span>
+                    </div>
                     <div className={styles.bar}>
                       <div
                         className={styles.barFill}
@@ -40,6 +57,14 @@ export default function VendasPorGrupoTable({ data }) {
           </tbody>
         </table>
       </div>
+
+      {openGrupo && (
+        <GrupoDetalhesModal
+          grupo={openGrupo}
+          filters={filters}
+          onClose={() => setOpenGrupo(null)}
+        />
+      )}
     </section>
   )
 }

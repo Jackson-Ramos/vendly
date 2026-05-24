@@ -38,7 +38,7 @@ export default function Relatorio() {
 
         <div className={styles.row2}>
           <EvolucaoMensalChart filters={memoFilters} />
-          <VendasPorGrupoTable data={vendasPorGrupo} />
+          <VendasPorGrupoTable data={vendasPorGrupo} filters={memoFilters} />
         </div>
 
         <RankingVendedoresTable data={ranking} />

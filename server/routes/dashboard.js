@@ -94,6 +94,80 @@ router.get('/ranking-vendedores', (req, res) => {
   res.json(rows)
 })
 
+router.get('/grupo-detalhes', (req, res) => {
+  const codGrupo = Number(req.query.codGrupo)
+  if (!Number.isFinite(codGrupo)) {
+    return res.status(400).json({ error: 'codGrupo obrigatório' })
+  }
+
+  const { sql: where, params } = buildWhere(req.query)
+  const grupoClause = where ? `${where} AND p.COD_GRUPO = @codGrupo` : `WHERE p.COD_GRUPO = @codGrupo`
+  const allParams = { ...params, codGrupo }
+
+  const evolucao = db
+    .prepare(`
+      SELECT
+        substr(v.Data,7,4)||'-'||substr(v.Data,4,2) AS mes,
+        SUM(v.VL_Total_Liquido) AS vendaLiquida
+      FROM vendas_2025 v
+      INNER JOIN Produtos p ON p.Cod_Prod = v.COD_PROD
+      ${grupoClause}
+      GROUP BY mes
+      ORDER BY mes
+    `)
+    .all(allParams)
+
+  const cores = db
+    .prepare(`
+      SELECT
+        COALESCE(c.DESCRICAO, '(sem cor)') AS cor,
+        SUM(v.VL_Total_Liquido) AS valor,
+        SUM(v.QUANTIDADE)       AS qtd
+      FROM vendas_2025 v
+      INNER JOIN Produtos p ON p.Cod_Prod = v.COD_PROD
+      LEFT  JOIN Cores    c ON c.CodCor   = p.CodCor
+      ${grupoClause}
+      GROUP BY c.DESCRICAO
+      ORDER BY valor DESC
+      LIMIT 10
+    `)
+    .all(allParams)
+
+  const tamanhos = db
+    .prepare(`
+      SELECT
+        COALESCE(t.DESCRICAO, '(sem tamanho)') AS tamanho,
+        SUM(v.VL_Total_Liquido) AS valor,
+        SUM(v.QUANTIDADE)       AS qtd
+      FROM vendas_2025 v
+      INNER JOIN Produtos p ON p.Cod_Prod = v.COD_PROD
+      LEFT  JOIN Tamanho  t ON t.CodTamanho = p.CODTAMANHO
+      ${grupoClause}
+      GROUP BY t.DESCRICAO
+      ORDER BY valor DESC
+      LIMIT 10
+    `)
+    .all(allParams)
+
+  const produtos = db
+    .prepare(`
+      SELECT
+        p.Cod_Prod              AS codProd,
+        p.DESC_COMPLETA         AS produto,
+        SUM(v.VL_Total_Liquido) AS valor,
+        SUM(v.QUANTIDADE)       AS qtd
+      FROM vendas_2025 v
+      INNER JOIN Produtos p ON p.Cod_Prod = v.COD_PROD
+      ${grupoClause}
+      GROUP BY p.Cod_Prod, p.DESC_COMPLETA
+      ORDER BY valor DESC
+      LIMIT 10
+    `)
+    .all(allParams)
+
+  res.json({ evolucao, cores, tamanhos, produtos })
+})
+
 router.get('/evolucao-mensal', (req, res) => {
   const { sql: where, params } = buildWhere(req.query)
   const rows = db

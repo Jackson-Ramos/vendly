@@ -371,11 +371,41 @@
   min-width: 0;
 }
 
+.grupoNameRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.grupoExpandBtn {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  background: transparent;
+  border: 1px solid #23252a;
+  border-radius: 4px;
+  color: #8a8f98;
+  cursor: pointer;
+  transition: background-color 0.12s ease, color 0.12s ease, border-color 0.12s ease;
+}
+
+.grupoExpandBtn:hover {
+  background-color: #1c1f24;
+  border-color: #34343a;
+  color: #f7f8f8;
+}
+
 .grupoName {
   color: #f7f8f8;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  min-width: 0;
 }
 
 .bar {
@@ -409,4 +439,165 @@
   border-radius: 8px;
   font-size: 13px;
   margin-bottom: 16px;
+}
+
+/* ── Modal ───────────────────────────────────────────── */
+
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(2px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  z-index: 100;
+  animation: modalFade 0.12s ease;
+}
+
+@keyframes modalFade {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.modalContent {
+  background-color: #0f1011;
+  border: 1px solid #23252a;
+  border-radius: 12px;
+  width: min(1100px, 100%);
+  max-height: calc(100vh - 48px);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+}
+
+.modalHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 16px;
+  border-bottom: 1px solid #23252a;
+}
+
+.modalTitleGroup {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  min-width: 0;
+}
+
+.modalEyebrow {
+  font-size: 11px;
+  font-weight: 500;
+  color: #8a8f98;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.modalTitle {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: #f7f8f8;
+  letter-spacing: -0.2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.modalCloseBtn {
+  flex: 0 0 auto;
+  width: 26px;
+  height: 26px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 1px solid #23252a;
+  border-radius: 6px;
+  color: #8a8f98;
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  transition: background-color 0.12s ease, color 0.12s ease, border-color 0.12s ease;
+}
+
+.modalCloseBtn:hover {
+  background-color: #1c1f24;
+  border-color: #34343a;
+  color: #f7f8f8;
+}
+
+.modalBody {
+  padding: 20px 22px 22px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.modalChartSection {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.modalChartWrapper {
+  height: 240px;
+  width: 100%;
+}
+
+.modalTablesGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+
+@media (max-width: 900px) {
+  .modalTablesGrid { grid-template-columns: 1fr; }
+}
+
+.miniTableWrap {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+
+.miniTableTitle {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 500;
+  color: #8a8f98;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.miniTableScroll {
+  max-height: 260px;
+  overflow-y: auto;
+  border: 1px solid #1a1c1f;
+  border-radius: 8px;
+  scrollbar-width: thin;
+  scrollbar-color: #2a2d33 transparent;
+}
+
+.miniTableScroll::-webkit-scrollbar {
+  width: 6px;
+}
+
+.miniTableScroll::-webkit-scrollbar-thumb {
+  background-color: #2a2d33;
+  border-radius: 3px;
+}
+
+.miniTableLabel {
+  color: #f7f8f8;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 1px;
 }
