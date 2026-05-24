@@ -104,6 +104,17 @@ router.get('/grupo-detalhes', (req, res) => {
   const grupoClause = where ? `${where} AND p.COD_GRUPO = @codGrupo` : `WHERE p.COD_GRUPO = @codGrupo`
   const allParams = { ...params, codGrupo }
 
+  // Filtro opcional por mês (YYYY-MM) aplicado só às tabelas top — evolução
+  // sempre cobre o período total dos filtros do dashboard, para servir de
+  // contexto/seletor visual.
+  let mesClause = ''
+  const tableParams = { ...allParams }
+  if (/^\d{4}-\d{2}$/.test(req.query.mes || '')) {
+    mesClause = ` AND substr(v.Data,7,4)||'-'||substr(v.Data,4,2) = @mesFiltro`
+    tableParams.mesFiltro = req.query.mes
+  }
+  const tablesClause = `${grupoClause}${mesClause}`
+
   const evolucao = db
     .prepare(`
       SELECT
@@ -126,12 +137,12 @@ router.get('/grupo-detalhes', (req, res) => {
       FROM vendas_2025 v
       INNER JOIN Produtos p ON p.Cod_Prod = v.COD_PROD
       LEFT  JOIN Cores    c ON c.CodCor   = p.CodCor
-      ${grupoClause}
+      ${tablesClause}
       GROUP BY c.DESCRICAO
       ORDER BY valor DESC
       LIMIT 10
     `)
-    .all(allParams)
+    .all(tableParams)
 
   const tamanhos = db
     .prepare(`
@@ -142,12 +153,12 @@ router.get('/grupo-detalhes', (req, res) => {
       FROM vendas_2025 v
       INNER JOIN Produtos p ON p.Cod_Prod = v.COD_PROD
       LEFT  JOIN Tamanho  t ON t.CodTamanho = p.CODTAMANHO
-      ${grupoClause}
+      ${tablesClause}
       GROUP BY t.DESCRICAO
       ORDER BY valor DESC
       LIMIT 10
     `)
-    .all(allParams)
+    .all(tableParams)
 
   const produtos = db
     .prepare(`
@@ -158,12 +169,12 @@ router.get('/grupo-detalhes', (req, res) => {
         SUM(v.QUANTIDADE)       AS qtd
       FROM vendas_2025 v
       INNER JOIN Produtos p ON p.Cod_Prod = v.COD_PROD
-      ${grupoClause}
+      ${tablesClause}
       GROUP BY p.Cod_Prod, p.DESC_COMPLETA
       ORDER BY valor DESC
       LIMIT 10
     `)
-    .all(allParams)
+    .all(tableParams)
 
   res.json({ evolucao, cores, tamanhos, produtos })
 })

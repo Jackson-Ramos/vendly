@@ -19,12 +19,17 @@ export function useDashboardData(filters) {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
 
+  const filterKey = `${filters.filial}|${filters.vendedor}|${filters.inicio}|${filters.fim}`
+  const [prevFilterKey, setPrevFilterKey] = useState(filterKey)
+  if (filterKey !== prevFilterKey) {
+    setPrevFilterKey(filterKey)
+    setLoading(true)
+    setError(null)
+  }
+
   useEffect(() => {
     const ctrl = new AbortController()
     const q = toQuery(filters)
-
-    setLoading(true)
-    setError(null)
 
     Promise.all([
       fetch(`/api/dashboard/kpis${q}`,              { signal: ctrl.signal }).then(r => r.json()),

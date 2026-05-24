@@ -72,6 +72,28 @@ export default function GrupoDetalhesModal({ grupo, filters, onClose }) {
   const [data, setData] = useState({ evolucao: [], cores: [], tamanhos: [], produtos: [] })
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+  const [selectedMonth, setSelectedMonth] = useState(null)
+
+  // Reseta o mês selecionado quando filtros ou grupo mudam — o mês antigo pode
+  // não existir mais no novo recorte.
+  const resetKey = `${grupo.codGrupo}|${filters.filial}|${filters.vendedor}|${filters.inicio}|${filters.fim}`
+  const [prevResetKey, setPrevResetKey] = useState(resetKey)
+
+  const fetchKey = `${grupo.codGrupo}|${filters.filial}|${filters.vendedor}|${filters.inicio}|${filters.fim}|${selectedMonth}`
+  const [prevFetchKey, setPrevFetchKey] = useState(fetchKey)
+
+  if (resetKey !== prevResetKey) {
+    setPrevResetKey(resetKey)
+    setSelectedMonth(null)
+    const newFetchKey = `${grupo.codGrupo}|${filters.filial}|${filters.vendedor}|${filters.inicio}|${filters.fim}|null`
+    setPrevFetchKey(newFetchKey)
+    setLoading(true)
+    setError(null)
+  } else if (fetchKey !== prevFetchKey) {
+    setPrevFetchKey(fetchKey)
+    setLoading(true)
+    setError(null)
+  }
 
   useEffect(() => {
     function onKey(e) { if (e.key === 'Escape') onClose() }
@@ -81,10 +103,10 @@ export default function GrupoDetalhesModal({ grupo, filters, onClose }) {
 
   useEffect(() => {
     const ctrl = new AbortController()
-    setLoading(true)
-    setError(null)
+    const extra = { codGrupo: grupo.codGrupo }
+    if (selectedMonth) extra.mes = selectedMonth
     fetch(
-      `/api/dashboard/grupo-detalhes${buildQuery(filters, { codGrupo: grupo.codGrupo })}`,
+      `/api/dashboard/grupo-detalhes${buildQuery(filters, extra)}`,
       { signal: ctrl.signal },
     )
       .then(r => r.json())
@@ -94,7 +116,27 @@ export default function GrupoDetalhesModal({ grupo, filters, onClose }) {
         setError(err); setLoading(false)
       })
     return () => ctrl.abort()
-  }, [grupo.codGrupo, filters.filial, filters.vendedor, filters.inicio, filters.fim])
+  }, [grupo.codGrupo, filters.filial, filters.vendedor, filters.inicio, filters.fim, selectedMonth])
+
+  function handleChartClick(e) {
+    if (!e?.activeLabel) return
+    setSelectedMonth(prev => prev === e.activeLabel ? null : e.activeLabel)
+  }
+
+  const renderDot = (props) => {
+    const { cx, cy, payload } = props
+    const isSelected = payload.mes === selectedMonth
+    return (
+      <circle
+        cx={cx}
+        cy={cy}
+        r={isSelected ? 5 : 3}
+        fill={isSelected ? '#828fff' : '#5e6ad2'}
+        stroke={isSelected ? '#f7f8f8' : 'none'}
+        strokeWidth={isSelected ? 2 : 0}
+      />
+    )
+  }
 
   return (
     <div className={styles.modalOverlay} onClick={onClose} role="presentation">
@@ -118,15 +160,31 @@ export default function GrupoDetalhesModal({ grupo, filters, onClose }) {
           {error && <div className={styles.errorBanner}>Erro ao carregar: {error.message}</div>}
 
           <section className={styles.modalChartSection}>
-            <h3 className={styles.miniTableTitle}>Evolução no ano</h3>
+            <div className={styles.modalChartHeader}>
+              <h3 className={styles.miniTableTitle}>Evolução no ano</h3>
+              {selectedMonth && (
+                <button
+                  type="button"
+                  className={styles.monthChip}
+                  onClick={() => setSelectedMonth(null)}
+                  title="Limpar filtro de mês"
+                >
+                  Mês: {mesLabel(selectedMonth)}/{selectedMonth.slice(0, 4)}
+                  <span className={styles.monthChipX} aria-hidden="true">×</span>
+                </button>
+              )}
+            </div>
             <div className={styles.modalChartWrapper}>
-              {loading ? (
-                <div className={styles.empty}>Carregando…</div>
-              ) : data.evolucao.length === 0 ? (
-                <div className={styles.empty}>Sem dados no período</div>
+              {data.evolucao.length === 0 ? (
+                <div className={styles.empty}>{loading ? 'Carregando…' : 'Sem dados no período'}</div>
               ) : (
                 <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={data.evolucao} margin={{ top: 8, right: 16, left: 8, bottom: 4 }}>
+                  <LineChart
+                    data={data.evolucao}
+                    margin={{ top: 8, right: 16, left: 8, bottom: 4 }}
+                    onClick={handleChartClick}
+                    style={{ cursor: 'pointer' }}
+                  >
                     <CartesianGrid stroke="#23252a" strokeDasharray="3 3" vertical={false} />
                     <XAxis
                       dataKey="mes"
@@ -150,8 +208,8 @@ export default function GrupoDetalhesModal({ grupo, filters, onClose }) {
                       dataKey="vendaLiquida"
                       stroke="#5e6ad2"
                       strokeWidth={2}
-                      dot={{ r: 3, fill: '#5e6ad2', strokeWidth: 0 }}
-                      activeDot={{ r: 5, fill: '#828fff', strokeWidth: 0 }}
+                      dot={renderDot}
+                      activeDot={{ r: 6, fill: '#828fff', strokeWidth: 0 }}
                     />
                   </LineChart>
                 </ResponsiveContainer>
