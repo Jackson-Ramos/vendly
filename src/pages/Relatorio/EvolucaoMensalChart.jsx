@@ -22,24 +22,37 @@ function monthOptions(year) {
   }))
 }
 
-// Semanas Dom-Sáb que tocam o ano. `value` é o sábado final (YYYY-MM-DD) —
-// o backend recebe esse parâmetro e devolve o domingo–sábado contendo essa data.
+// Semanas Dom-Sáb cujo "ano dominante" (quarta-feira, ponto médio) está em
+// `year`. `value` é o sábado final (YYYY-MM-DD) — o backend recebe esse
+// parâmetro e devolve o domingo–sábado terminando nessa data. Usar a quarta
+// como referência evita que semanas que cruzam a virada de ano fiquem
+// associadas ao ano errado (ex.: Dom 28/dez/2025 – Sáb 3/jan/2026 pertence
+// a 2025, não a 2026).
 function weekOptions(year) {
   const weeks = []
-  const d = new Date(Date.UTC(year, 0, 1))
-  d.setUTCDate(d.getUTCDate() - d.getUTCDay())
-  while (true) {
-    const start = new Date(d)
-    const end = new Date(d)
-    end.setUTCDate(end.getUTCDate() + 6)
-    if (start.getUTCFullYear() > year) break
+  const wed = new Date(Date.UTC(year, 0, 1))
+  while (wed.getUTCDay() !== 3) wed.setUTCDate(wed.getUTCDate() + 1)
+  while (wed.getUTCFullYear() === year) {
+    const start = new Date(wed)
+    start.setUTCDate(start.getUTCDate() - 3)
+    const end = new Date(wed)
+    end.setUTCDate(end.getUTCDate() + 3)
     weeks.push({
       value: `${end.getUTCFullYear()}-${pad2(end.getUTCMonth() + 1)}-${pad2(end.getUTCDate())}`,
       label: `${pad2(start.getUTCDate())}/${pad2(start.getUTCMonth() + 1)} – ${pad2(end.getUTCDate())}/${pad2(end.getUTCMonth() + 1)}`,
     })
-    d.setUTCDate(d.getUTCDate() + 7)
+    wed.setUTCDate(wed.getUTCDate() + 7)
   }
   return weeks
+}
+
+// Ano dominante de uma semana cujo sábado final é `yyyymmdd` (YYYY-MM-DD).
+// Mesma lógica do weekOptions: usa a quarta-feira (sábado - 3 dias).
+function weekDominantYear(yyyymmdd) {
+  const [y, m, d] = yyyymmdd.split('-').map(Number)
+  const wed = new Date(Date.UTC(y, m - 1, d))
+  wed.setUTCDate(wed.getUTCDate() - 3)
+  return wed.getUTCFullYear()
 }
 
 function compactBRL(value) {
@@ -185,7 +198,7 @@ export default function EvolucaoMensalChart({ filters }) {
     periodo === 'mes' && currentMesValue
       ? Number(currentMesValue.slice(0, 4))
       : periodo === 'semana' && currentSemanaValue
-      ? Number(currentSemanaValue.slice(0, 4))
+      ? weekDominantYear(currentSemanaValue)
       : new Date().getFullYear()
 
   let semanaData = displayData
@@ -299,11 +312,10 @@ export default function EvolucaoMensalChart({ filters }) {
                 dataKey="dia"
                 tickFormatter={diaTickMes}
                 stroke="#62666d"
-                tick={{ fill: '#8a8f98', fontSize: 12 }}
+                tick={{ fill: '#8a8f98', fontSize: 11 }}
                 axisLine={{ stroke: '#23252a' }}
                 tickLine={false}
-                interval="preserveStartEnd"
-                minTickGap={12}
+                interval={0}
               />
               <YAxis
                 tickFormatter={compactBRL}

@@ -47,19 +47,42 @@ router.get('/kpis', (req, res) => {
   })
 })
 
+// `dim` define a dimensão da agregação: grupo (padrão), cor ou tamanho.
+// Todas retornam o mesmo shape ({codigo, descricao, valor, percentual}) para
+// que o frontend possa alternar sem mexer no render.
+const VENDAS_POR_DIM = {
+  grupo: {
+    join:    'INNER JOIN Grupo g ON g.COD_GRUPO = p.COD_GRUPO',
+    codigo:  'g.COD_GRUPO',
+    descricao: 'g.DESCRICAO',
+  },
+  cor: {
+    join:    'LEFT JOIN Cores c ON c.CodCor = p.CodCor',
+    codigo:  'p.CodCor',
+    descricao: "COALESCE(c.DESCRICAO, '(sem cor)')",
+  },
+  tamanho: {
+    join:    'LEFT JOIN Tamanho t ON t.CodTamanho = p.CODTAMANHO',
+    codigo:  'p.CODTAMANHO',
+    descricao: "COALESCE(t.DESCRICAO, '(sem tamanho)')",
+  },
+}
+
 router.get('/vendas-por-grupo', (req, res) => {
+  const dim = VENDAS_POR_DIM[req.query.dim] ? req.query.dim : 'grupo'
+  const cfg = VENDAS_POR_DIM[dim]
   const { sql: where, params } = buildWhere(req.query)
   const rows = db
     .prepare(`
       SELECT
-        g.COD_GRUPO        AS codGrupo,
-        g.DESCRICAO        AS grupo,
+        ${cfg.codigo}    AS codigo,
+        ${cfg.descricao} AS descricao,
         SUM(v.VL_Total_Liquido) AS valor
       FROM vendas_2025 v
       INNER JOIN Produtos p ON p.Cod_Prod = v.COD_PROD
-      INNER JOIN Grupo g    ON g.COD_GRUPO = p.COD_GRUPO
+      ${cfg.join}
       ${where}
-      GROUP BY g.COD_GRUPO, g.DESCRICAO
+      GROUP BY ${cfg.codigo}, ${cfg.descricao}
       ORDER BY valor DESC
     `)
     .all(params)
@@ -92,6 +115,91 @@ router.get('/ranking-vendedores', (req, res) => {
     `)
     .all({ ...params, limit })
   res.json(rows)
+})
+
+router.get('/grupo-detalhes', (req, res) => {
+  const codGrupo = Number(req.query.codGrupo)
+  if (!Number.isFinite(codGrupo)) {
+    return res.status(400).json({ error: 'codGrupo obrigatório' })
+  }
+
+  const { sql: where, params } = buildWhere(req.query)
+  const grupoClause = where ? `${where} AND p.COD_GRUPO = @codGrupo` : `WHERE p.COD_GRUPO = @codGrupo`
+  const allParams = { ...params, codGrupo }
+
+  // Filtro opcional por mês (YYYY-MM) aplicado só às tabelas top — evolução
+  // sempre cobre o período total dos filtros do dashboard, para servir de
+  // contexto/seletor visual.
+  let mesClause = ''
+  const tableParams = { ...allParams }
+  if (/^\d{4}-\d{2}$/.test(req.query.mes || '')) {
+    mesClause = ` AND substr(v.Data,7,4)||'-'||substr(v.Data,4,2) = @mesFiltro`
+    tableParams.mesFiltro = req.query.mes
+  }
+  const tablesClause = `${grupoClause}${mesClause}`
+
+  const evolucao = db
+    .prepare(`
+      SELECT
+        substr(v.Data,7,4)||'-'||substr(v.Data,4,2) AS mes,
+        SUM(v.VL_Total_Liquido) AS vendaLiquida
+      FROM vendas_2025 v
+      INNER JOIN Produtos p ON p.Cod_Prod = v.COD_PROD
+      ${grupoClause}
+      GROUP BY mes
+      ORDER BY mes
+    `)
+    .all(allParams)
+
+  const cores = db
+    .prepare(`
+      SELECT
+        COALESCE(c.DESCRICAO, '(sem cor)') AS cor,
+        SUM(v.VL_Total_Liquido) AS valor,
+        SUM(v.QUANTIDADE)       AS qtd
+      FROM vendas_2025 v
+      INNER JOIN Produtos p ON p.Cod_Prod = v.COD_PROD
+      LEFT  JOIN Cores    c ON c.CodCor   = p.CodCor
+      ${tablesClause}
+      GROUP BY c.DESCRICAO
+      ORDER BY valor DESC
+      LIMIT 10
+    `)
+    .all(tableParams)
+
+  const tamanhos = db
+    .prepare(`
+      SELECT
+        COALESCE(t.DESCRICAO, '(sem tamanho)') AS tamanho,
+        SUM(v.VL_Total_Liquido) AS valor,
+        SUM(v.QUANTIDADE)       AS qtd
+      FROM vendas_2025 v
+      INNER JOIN Produtos p ON p.Cod_Prod = v.COD_PROD
+      LEFT  JOIN Tamanho  t ON t.CodTamanho = p.CODTAMANHO
+      ${tablesClause}
+      GROUP BY t.DESCRICAO
+      ORDER BY valor DESC
+      LIMIT 10
+    `)
+    .all(tableParams)
+
+  const produtos = db
+    .prepare(`
+      SELECT
+        p.Cod_Prod              AS codProd,
+        p.DESC_COMPLETA         AS produto,
+        SUM(v.VL_Total_Liquido) AS valor,
+        SUM(v.QUANTIDADE)       AS qtd
+      FROM vendas_2025 v
+      INNER JOIN Produtos p ON p.Cod_Prod = v.COD_PROD
+      ${tablesClause}
+      GROUP BY p.Cod_Prod, p.DESC_COMPLETA
+      ORDER BY valor DESC
+      LIMIT 10
+    `)
+    .all(tableParams)
+
+  res.json({ evolucao, cores, tamanhos, produtos })
 })
 
 router.get('/evolucao-mensal', (req, res) => {

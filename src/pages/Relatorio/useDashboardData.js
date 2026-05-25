@@ -13,26 +13,29 @@ function toQuery(filters) {
 export function useDashboardData(filters) {
   const [data, setData] = useState({
     kpis: null,
-    vendasPorGrupo: [],
     ranking: [],
   })
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
 
+  const filterKey = `${filters.filial}|${filters.vendedor}|${filters.inicio}|${filters.fim}`
+  const [prevFilterKey, setPrevFilterKey] = useState(filterKey)
+  if (filterKey !== prevFilterKey) {
+    setPrevFilterKey(filterKey)
+    setLoading(true)
+    setError(null)
+  }
+
   useEffect(() => {
     const ctrl = new AbortController()
     const q = toQuery(filters)
 
-    setLoading(true)
-    setError(null)
-
     Promise.all([
       fetch(`/api/dashboard/kpis${q}`,              { signal: ctrl.signal }).then(r => r.json()),
-      fetch(`/api/dashboard/vendas-por-grupo${q}`,  { signal: ctrl.signal }).then(r => r.json()),
       fetch(`/api/dashboard/ranking-vendedores${q}`,{ signal: ctrl.signal }).then(r => r.json()),
     ])
-      .then(([kpis, vendasPorGrupo, ranking]) => {
-        setData({ kpis, vendasPorGrupo, ranking })
+      .then(([kpis, ranking]) => {
+        setData({ kpis, ranking })
         setLoading(false)
       })
       .catch(err => {

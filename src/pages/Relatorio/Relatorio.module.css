@@ -39,6 +39,7 @@
   flex-direction: column;
   gap: 4px;
   min-width: 0;
+  flex: 0 0 auto;
 }
 
 .filterLabel {
@@ -94,6 +95,124 @@
   color: #d0d6e0;
 }
 
+/* Botão de filtros (visível só em tablet/mobile) */
+.filterIconBtn {
+  display: none;
+  align-items: center;
+  gap: 8px;
+  background-color: #0f1011;
+  border: 1px solid #23252a;
+  border-radius: 8px;
+  padding: 8px 14px;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  color: #d0d6e0;
+  cursor: pointer;
+  transition: background-color 0.12s ease, border-color 0.12s ease, color 0.12s ease;
+}
+
+.filterIconBtn:hover {
+  background-color: #1c1f24;
+  border-color: #34343a;
+  color: #f7f8f8;
+}
+
+.filterIconBtn svg {
+  width: 16px;
+  height: 16px;
+}
+
+.filterBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 6px;
+  border-radius: 9px;
+  background-color: #5e6ad2;
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1;
+}
+
+/* Em tablet/mobile: esconde a barra inline e mostra o ícone */
+@media (max-width: 1024px) {
+  .filtersInlineWrap {
+    display: none;
+  }
+
+  .filterIconBtn {
+    display: inline-flex;
+  }
+
+  /* Aplica também quando o FiltersBar é renderizado dentro do modal */
+  .filtersBar {
+    width: 100%;
+  }
+
+  .filterField {
+    flex: 1 1 calc(50% - 6px);
+    min-width: 160px;
+  }
+
+  .select,
+  .input {
+    width: 100%;
+  }
+
+  .clearBtn {
+    margin-left: auto;
+  }
+}
+
+@media (max-width: 560px) {
+  .filterField {
+    flex: 1 1 100%;
+  }
+
+  .clearBtn {
+    width: 100%;
+    margin-left: 0;
+  }
+}
+
+/* Modal de Filtros */
+.filtersModalContent {
+  background-color: #0f1011;
+  border: 1px solid #23252a;
+  border-radius: 12px;
+  width: 92vw;
+  max-width: 520px;
+  max-height: calc(100vh - 48px);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+}
+
+.filtersModalBody {
+  padding: 18px 20px 20px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #2a2d33 transparent;
+}
+
+.filtersModalBody::-webkit-scrollbar {
+  width: 6px;
+}
+
+.filtersModalBody::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.filtersModalBody::-webkit-scrollbar-thumb {
+  background-color: #2a2d33;
+  border-radius: 3px;
+}
+
 /* ── Body Layout ─────────────────────────────────────── */
 
 .body {
@@ -126,11 +245,18 @@
 }
 
 @media (max-width: 1200px) {
-  .kpiGrid { grid-template-columns: repeat(3, 1fr); }
+  .kpiGrid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+  }
 }
 
 @media (max-width: 700px) {
   .kpiGrid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 380px) {
+  .kpiGrid { grid-template-columns: 1fr; }
 }
 
 .kpiCard {
@@ -141,6 +267,14 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
+  min-width: 0;
+}
+
+@media (max-width: 1024px) {
+  .kpiCard {
+    padding: 14px 16px;
+    gap: 6px;
+  }
 }
 
 .kpiLabel {
@@ -156,6 +290,18 @@
   font-weight: 600;
   letter-spacing: -0.6px;
   color: #f7f8f8;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+@media (max-width: 1024px) {
+  .kpiLabel { font-size: 11px; }
+  .kpiValue { font-size: 22px; letter-spacing: -0.4px; }
+}
+
+@media (max-width: 700px) {
+  .kpiValue { font-size: 20px; }
 }
 
 /* ── Generic Card ────────────────────────────────────── */
@@ -261,7 +407,8 @@
 }
 
 .chartWrapper {
-  height: 280px;
+  flex: 1;
+  min-height: 280px;
   width: 100%;
 }
 
@@ -371,11 +518,41 @@
   min-width: 0;
 }
 
+.grupoNameRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.grupoExpandBtn {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  background: transparent;
+  border: 1px solid #23252a;
+  border-radius: 4px;
+  color: #8a8f98;
+  cursor: pointer;
+  transition: background-color 0.12s ease, color 0.12s ease, border-color 0.12s ease;
+}
+
+.grupoExpandBtn:hover {
+  background-color: #1c1f24;
+  border-color: #34343a;
+  color: #f7f8f8;
+}
+
 .grupoName {
   color: #f7f8f8;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  min-width: 0;
 }
 
 .bar {
@@ -409,4 +586,234 @@
   border-radius: 8px;
   font-size: 13px;
   margin-bottom: 16px;
+}
+
+/* ── Modal ───────────────────────────────────────────── */
+
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(2px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  z-index: 100;
+  animation: modalFade 0.12s ease;
+}
+
+@keyframes modalFade {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.modalContent {
+  background-color: #0f1011;
+  border: 1px solid #23252a;
+  border-radius: 12px;
+  width: 85vw;
+  max-height: calc(100vh - 48px);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+}
+
+.modalHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 16px;
+  border-bottom: 1px solid #23252a;
+}
+
+.modalTitleGroup {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  min-width: 0;
+}
+
+.modalEyebrow {
+  font-size: 11px;
+  font-weight: 500;
+  color: #8a8f98;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.modalTitle {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: #f7f8f8;
+  letter-spacing: -0.2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.modalCloseBtn {
+  flex: 0 0 auto;
+  width: 26px;
+  height: 26px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 1px solid #23252a;
+  border-radius: 6px;
+  color: #8a8f98;
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  transition: background-color 0.12s ease, color 0.12s ease, border-color 0.12s ease;
+}
+
+.modalCloseBtn:hover {
+  background-color: #1c1f24;
+  border-color: #34343a;
+  color: #f7f8f8;
+}
+
+.modalBody {
+  padding: 20px 22px 22px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  scrollbar-width: thin;
+  scrollbar-color: #2a2d33 transparent;
+}
+
+.modalBody::-webkit-scrollbar {
+  width: 6px;
+}
+
+.modalBody::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.modalBody::-webkit-scrollbar-thumb {
+  background-color: #2a2d33;
+  border-radius: 3px;
+}
+
+.modalBody::-webkit-scrollbar-thumb:hover {
+  background-color: #3a3d44;
+}
+
+.modalChartSection {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background-color: #16181c;
+  border: 1px solid #23252a;
+  border-radius: 10px;
+  padding: 14px;
+}
+
+.modalChartHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.monthChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background-color: #1c1f24;
+  border: 1px solid #34343a;
+  border-radius: 999px;
+  padding: 4px 10px 4px 12px;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 500;
+  color: #d0d6e0;
+  cursor: pointer;
+  transition: background-color 0.12s ease, border-color 0.12s ease, color 0.12s ease;
+}
+
+.monthChip:hover {
+  background-color: #23262c;
+  border-color: #5e6ad2;
+  color: #f7f8f8;
+}
+
+.monthChipX {
+  font-size: 16px;
+  line-height: 1;
+  color: #8a8f98;
+}
+
+.monthChip:hover .monthChipX {
+  color: #f7f8f8;
+}
+
+.modalChartWrapper {
+  height: 240px;
+  width: 100%;
+}
+
+.modalTablesGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+
+@media (max-width: 900px) {
+  .modalTablesGrid { grid-template-columns: 1fr; }
+}
+
+.miniTableWrap {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+  background-color: #16181c;
+  border: 1px solid #23252a;
+  border-radius: 10px;
+  padding: 14px;
+}
+
+.miniTableTitle {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 500;
+  color: #8a8f98;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.miniTableScroll {
+  max-height: 260px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #2a2d33 transparent;
+}
+
+.miniTableWrap .table thead th {
+  background-color: #16181c;
+}
+
+.miniTableScroll::-webkit-scrollbar {
+  width: 6px;
+}
+
+.miniTableScroll::-webkit-scrollbar-thumb {
+  background-color: #2a2d33;
+  border-radius: 3px;
+}
+
+.miniTableLabel {
+  color: #f7f8f8;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 1px;
 }
