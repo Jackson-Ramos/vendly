@@ -3,9 +3,10 @@ import styles from '../Relatorio/Relatorio.module.css'
 // Presets de janela de análise (escolha mais comum em decisão de compra).
 // Usa o intervalo de datas conhecido pelo backend (meta.dataMax) como âncora.
 const PRESETS = [
-  { key: '3m',  label: '3 meses',  months: 3 },
-  { key: '6m',  label: '6 meses',  months: 6 },
-  { key: '12m', label: '12 meses', months: 12 },
+  { key: 'atual', label: 'Mês atual', months: 0 },
+  { key: '3m',   label: '3 meses',   months: 3 },
+  { key: '6m',   label: '6 meses',   months: 6 },
+  { key: '12m',  label: '12 meses',  months: 12 },
 ]
 
 function isoMinusMonths(isoDate, months) {
@@ -17,10 +18,16 @@ function isoMinusMonths(isoDate, months) {
   return dt.toISOString().slice(0, 10)
 }
 
+function firstDayOfMonth(isoDate) {
+  if (!isoDate) return ''
+  const [y, m] = isoDate.split('-')
+  return `${y}-${m}-01`
+}
+
 export default function FornecedoresFiltersBar({ filters, onChange, onClear, meta, fornecedores = [] }) {
   function applyPreset(months) {
     const fim = meta.dataMax || ''
-    const inicio = isoMinusMonths(fim, months)
+    const inicio = months === 0 ? firstDayOfMonth(fim) : isoMinusMonths(fim, months)
     onChange({ inicio, fim })
   }
 

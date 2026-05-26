@@ -10,7 +10,7 @@ export default function App() {
     <Routes>
       <Route path="/login" element={<Login />} />
       <Route path="/" element={<Home />}>
-        <Route index element={<Navigate to="vendas" replace />} />
+        <Route index element={<Navigate to="relatorio" replace />} />
         <Route path="vendas" element={<Vendas />} />
         <Route path="relatorio" element={<Relatorio />} />
         <Route path="fornecedores" element={<Fornecedores />} />
