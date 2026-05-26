@@ -140,3 +140,43 @@
 .virtualStockNotice strong {
   color: #f7f8f8;
 }
+
+/* Ações no header do modal de detalhes (Exportar + Fechar) */
+.modalHeaderActions {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex: 0 0 auto;
+}
+
+.exportBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background-color: #0f1011;
+  border: 1px solid #23252a;
+  border-radius: 6px;
+  padding: 5px 10px;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 500;
+  color: #d0d6e0;
+  cursor: pointer;
+  transition: background-color 0.12s ease, border-color 0.12s ease, color 0.12s ease;
+}
+
+.exportBtn:hover:not(:disabled) {
+  background-color: #1c1f24;
+  border-color: #34343a;
+  color: #f7f8f8;
+}
+
+.exportBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.exportBtn svg {
+  width: 14px;
+  height: 14px;
+}

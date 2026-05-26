@@ -43,6 +43,123 @@ function buildQuery(filters) {
   return q ? `?${q}` : ''
 }
 
+// Formatação BR pra CSV: vírgula decimal, sem separador de milhar (Excel-pt-BR
+// interpreta como número automaticamente).
+function csvNum(value, digits = 2) {
+  if (value == null || Number.isNaN(value)) return ''
+  return Number(value).toFixed(digits).replace('.', ',')
+}
+
+function csvCell(value) {
+  if (value == null) return ''
+  const s = String(value)
+  if (/[";\n\r]/.test(s)) return `"${s.replace(/"/g, '""')}"`
+  return s
+}
+
+function csvRow(cells) {
+  return cells.map(csvCell).join(';')
+}
+
+function slugify(s) {
+  return String(s)
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '')
+    .replace(/[^a-zA-Z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .toLowerCase()
+}
+
+function downloadCsv(filename, lines) {
+  // BOM + CRLF: Excel-pt-BR abre direto como tabela com acentos corretos.
+  const content = '﻿' + lines.join('\r\n')
+  const blob = new Blob([content], { type: 'text/csv;charset=utf-8' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = filename
+  document.body.appendChild(a)
+  a.click()
+  document.body.removeChild(a)
+  URL.revokeObjectURL(url)
+}
+
+function buildCsv(fornecedor, filters, data) {
+  const lines = []
+  lines.push(csvRow(['Fornecedor', fornecedor.fornecedor]))
+  lines.push(csvRow(['Código', fornecedor.codFornec]))
+  if (filters.filial) lines.push(csvRow(['Filial', filters.filial]))
+  if (filters.inicio || filters.fim) {
+    lines.push(csvRow(['Período', `${filters.inicio || '...'} a ${filters.fim || '...'}`]))
+  }
+  lines.push('')
+
+  // Cada seção vira um bloco de colunas; juntamos lado a lado com uma coluna
+  // vazia de separação. Linhas curtas são preenchidas com células em branco
+  // pra manter o alinhamento das colunas das outras seções.
+  const sections = [
+    {
+      title: 'Evolução mensal',
+      headers: ['Mês', 'Comprado (R$)', 'Vendido (R$)'],
+      rows: (data.evolucao ?? []).map(r => [r.mes, csvNum(r.valorComprado), csvNum(r.valorVendido)]),
+    },
+    {
+      title: 'Top giro no período',
+      headers: ['Código', 'Produto', 'Estoque', 'Qtd. vendida'],
+      rows: (data.topGiro ?? []).map(r => [r.codProd, r.produto, csvNum(r.estoqueVirtual, 0), csvNum(r.qtdVendidaPer, 0)]),
+    },
+    {
+      title: 'SKUs em ruptura',
+      headers: ['Código', 'Produto', 'Estoque', 'Qtd. vendida'],
+      rows: (data.ruptura ?? []).map(r => [r.codProd, r.produto, csvNum(r.estoqueVirtual, 0), csvNum(r.qtdVendidaPer, 0)]),
+    },
+    {
+      title: 'SKUs parados',
+      headers: ['Código', 'Produto', 'Estoque', 'Qtd. comprada'],
+      rows: (data.parados ?? []).map(r => [r.codProd, r.produto, csvNum(r.estoqueVirtual, 0), csvNum(r.qtdComprada, 0)]),
+    },
+  ]
+
+  const maxRows = Math.max(0, ...sections.map(s => s.rows.length))
+
+  function joinAcross(cellsBySection) {
+    const out = []
+    sections.forEach((s, i) => {
+      const width = s.headers.length
+      const cells = cellsBySection[i] ?? []
+      for (let k = 0; k < width; k++) out.push(cells[k] ?? '')
+      if (i < sections.length - 1) out.push('')
+    })
+    return csvRow(out)
+  }
+
+  lines.push(joinAcross(sections.map(s => [s.title])))
+  lines.push(joinAcross(sections.map(s => s.headers)))
+  for (let r = 0; r < maxRows; r++) {
+    lines.push(joinAcross(sections.map(s => s.rows[r] ?? [])))
+  }
+
+  return lines
+}
+
+function DownloadIcon() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+      <polyline points="7 10 12 15 17 10" />
+      <line x1="12" y1="15" x2="12" y2="3" />
+    </svg>
+  )
+}
+
 function SkuMiniTable({ title, rows, emptyMsg, valueLabel, valueKey, format }) {
   return (
     <div className={baseStyles.miniTableWrap}>
@@ -116,14 +233,31 @@ export default function FornecedorDetalhesModal({ fornecedor, filters, onClose }
             <span className={baseStyles.modalEyebrow}>Fornecedor</span>
             <h2 className={baseStyles.modalTitle}>{fornecedor.fornecedor}</h2>
           </div>
-          <button
-            type="button"
-            className={baseStyles.modalCloseBtn}
-            onClick={onClose}
-            aria-label="Fechar"
-          >
-            ×
-          </button>
+          <div className={styles.modalHeaderActions}>
+            <button
+              type="button"
+              className={styles.exportBtn}
+              onClick={() => {
+                const lines = buildCsv(fornecedor, filters, data)
+                const slug = slugify(fornecedor.fornecedor) || `cod-${fornecedor.codFornec}`
+                downloadCsv(`fornecedor-${slug}.csv`, lines)
+              }}
+              disabled={loading || !!error}
+              aria-label="Exportar para Excel"
+              title="Exportar para Excel"
+            >
+              <DownloadIcon />
+              <span>Exportar</span>
+            </button>
+            <button
+              type="button"
+              className={baseStyles.modalCloseBtn}
+              onClick={onClose}
+              aria-label="Fechar"
+            >
+              ×
+            </button>
+          </div>
         </header>
 
         <div className={baseStyles.modalBody}>
