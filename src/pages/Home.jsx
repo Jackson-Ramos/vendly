@@ -23,6 +23,16 @@ function IconRelatorio() {
   )
 }
 
+function IconFornecedores() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M3 7h18v3a2 2 0 1 1-4 0 2 2 0 1 1-4 0 2 2 0 1 1-4 0 2 2 0 1 1-4 0 2 2 0 1 1-4 0z" />
+      <path d="M5 11v9h14v-9" />
+      <path d="M9 20v-5h6v5" />
+    </svg>
+  )
+}
+
 function IconLogout() {
   return (
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
@@ -50,8 +60,9 @@ function IconChevronRight() {
 }
 
 const NAV_ITEMS = [
-  { to: 'vendas',    label: 'Vendas',    Icon: IconVendas },
-  { to: 'relatorio', label: 'Relatório', Icon: IconRelatorio },
+  { to: 'vendas',       label: 'Vendas',       Icon: IconVendas },
+  { to: 'relatorio',    label: 'Relatório',    Icon: IconRelatorio },
+  { to: 'fornecedores', label: 'Fornecedores', Icon: IconFornecedores },
 ]
 
 export default function Home() {
