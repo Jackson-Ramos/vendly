@@ -129,6 +129,11 @@ export default function Fornecedores() {
       {error && <div className={baseStyles.errorBanner}>Erro ao carregar dados: {error.message}</div>}
 
       <div className={`${baseStyles.body} ${loading ? baseStyles.bodyLoading : ''}`}>
+        {loading && (
+          <div className={baseStyles.spinnerOverlay} aria-live="polite" aria-busy="true">
+            <div className={baseStyles.spinner} role="status" aria-label="Carregando" />
+          </div>
+        )}
         <FornecedoresKpiCards
           fornecedores={fornecedoresVisiveis}
           activeKpi={kpiFilter}

@@ -216,6 +216,7 @@
 /* ── Body Layout ─────────────────────────────────────── */
 
 .body {
+  position: relative;
   display: flex;
   flex-direction: column;
   gap: 20px;
@@ -224,6 +225,35 @@
 
 .bodyLoading {
   opacity: 0.55;
+}
+
+.spinnerOverlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  z-index: 5;
+}
+
+.spinner {
+  width: 36px;
+  height: 36px;
+  border: 3px solid #23252a;
+  border-top-color: #5e6ad2;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+.spinnerSmall {
+  width: 28px;
+  height: 28px;
+  border-width: 3px;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }
 
 .row2 {
@@ -376,6 +406,35 @@
   color: #f7f8f8;
 }
 
+.chartPeriodDate {
+  background-color: #0a0b0c;
+  border: 1px solid #23252a;
+  border-radius: 6px;
+  padding: 4px 8px;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  color: #d0d6e0;
+  outline: none;
+  cursor: pointer;
+  color-scheme: dark;
+  transition: border-color 0.12s ease, color 0.12s ease;
+}
+
+.chartPeriodDate:hover {
+  border-color: #34343a;
+  color: #f7f8f8;
+}
+
+.chartPeriodDate:focus {
+  border-color: #5e6ad2;
+}
+
+.chartPeriodHint {
+  font-size: 12px;
+  color: #8a8f98;
+}
+
 .periodToggle {
   display: inline-flex;
   background-color: #0a0b0c;
@@ -407,6 +466,7 @@
 }
 
 .chartWrapper {
+  position: relative;
   flex: 1;
   min-height: 280px;
   width: 100%;
@@ -676,6 +736,46 @@
   background-color: #1c1f24;
   border-color: #34343a;
   color: #f7f8f8;
+}
+
+/* Ações no header do modal de detalhes (Exportar + Fechar) */
+.modalHeaderActions {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex: 0 0 auto;
+}
+
+.exportBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background-color: #0f1011;
+  border: 1px solid #23252a;
+  border-radius: 6px;
+  padding: 5px 10px;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 500;
+  color: #d0d6e0;
+  cursor: pointer;
+  transition: background-color 0.12s ease, border-color 0.12s ease, color 0.12s ease;
+}
+
+.exportBtn:hover:not(:disabled) {
+  background-color: #1c1f24;
+  border-color: #34343a;
+  color: #f7f8f8;
+}
+
+.exportBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.exportBtn svg {
+  width: 14px;
+  height: 14px;
 }
 
 .modalBody {

@@ -76,6 +76,11 @@ export default function Relatorio() {
       {error && <div className={styles.errorBanner}>Erro ao carregar dados: {error.message}</div>}
 
       <div className={`${styles.body} ${loading ? styles.bodyLoading : ''}`}>
+        {loading && (
+          <div className={styles.spinnerOverlay} aria-live="polite" aria-busy="true">
+            <div className={styles.spinner} role="status" aria-label="Carregando" />
+          </div>
+        )}
         <KpiCards kpis={kpis} />
 
         <div className={styles.row2}>

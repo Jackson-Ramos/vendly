@@ -22,37 +22,28 @@ function monthOptions(year) {
   }))
 }
 
-// Semanas Dom-Sáb cujo "ano dominante" (quarta-feira, ponto médio) está em
-// `year`. `value` é o sábado final (YYYY-MM-DD) — o backend recebe esse
-// parâmetro e devolve o domingo–sábado terminando nessa data. Usar a quarta
-// como referência evita que semanas que cruzam a virada de ano fiquem
-// associadas ao ano errado (ex.: Dom 28/dez/2025 – Sáb 3/jan/2026 pertence
-// a 2025, não a 2026).
-function weekOptions(year) {
-  const weeks = []
-  const wed = new Date(Date.UTC(year, 0, 1))
-  while (wed.getUTCDay() !== 3) wed.setUTCDate(wed.getUTCDate() + 1)
-  while (wed.getUTCFullYear() === year) {
-    const start = new Date(wed)
-    start.setUTCDate(start.getUTCDate() - 3)
-    const end = new Date(wed)
-    end.setUTCDate(end.getUTCDate() + 3)
-    weeks.push({
-      value: `${end.getUTCFullYear()}-${pad2(end.getUTCMonth() + 1)}-${pad2(end.getUTCDate())}`,
-      label: `${pad2(start.getUTCDate())}/${pad2(start.getUTCMonth() + 1)} – ${pad2(end.getUTCDate())}/${pad2(end.getUTCMonth() + 1)}`,
-    })
-    wed.setUTCDate(wed.getUTCDate() + 7)
-  }
-  return weeks
+// Sábado final da semana Dom-Sáb contendo `yyyymmdd`. O backend usa esse
+// parâmetro para devolver os 7 dias terminando nesse sábado.
+function weekEnd(yyyymmdd) {
+  const [y, m, d] = yyyymmdd.split('-').map(Number)
+  const dt = new Date(Date.UTC(y, m - 1, d))
+  dt.setUTCDate(dt.getUTCDate() + (6 - dt.getUTCDay()))
+  return `${dt.getUTCFullYear()}-${pad2(dt.getUTCMonth() + 1)}-${pad2(dt.getUTCDate())}`
 }
 
-// Ano dominante de uma semana cujo sábado final é `yyyymmdd` (YYYY-MM-DD).
-// Mesma lógica do weekOptions: usa a quarta-feira (sábado - 3 dias).
-function weekDominantYear(yyyymmdd) {
-  const [y, m, d] = yyyymmdd.split('-').map(Number)
-  const wed = new Date(Date.UTC(y, m - 1, d))
-  wed.setUTCDate(wed.getUTCDate() - 3)
-  return wed.getUTCFullYear()
+// Domingo inicial dada a data do sábado final.
+function weekStart(yyyymmddSat) {
+  const [y, m, d] = yyyymmddSat.split('-').map(Number)
+  const dt = new Date(Date.UTC(y, m - 1, d))
+  dt.setUTCDate(dt.getUTCDate() - 6)
+  return `${dt.getUTCFullYear()}-${pad2(dt.getUTCMonth() + 1)}-${pad2(dt.getUTCDate())}`
+}
+
+// Retorna YYYY-MM se inicio/fim caem no mesmo mês (qualquer recorte dentro
+// de um único mês conta); caso contrário, null.
+function sameMonthYM(inicio, fim) {
+  if (!inicio || !fim) return null
+  return inicio.slice(0, 7) === fim.slice(0, 7) ? inicio.slice(0, 7) : null
 }
 
 function compactBRL(value) {
@@ -119,15 +110,29 @@ export default function EvolucaoMensalChart({ filters }) {
   const [selectedMonth, setSelectedMonth] = useState(null)
   const [selectedWeek, setSelectedWeek] = useState(null)
   const [data, setData] = useState([])
+  const [loadedKey, setLoadedKey] = useState(null)
 
   // Invalida o mês/semana selecionados (drill-down) quando filtros mudam. Faz
   // isso no render — padrão recomendado pelo React em vez de useEffect com setState.
+  // Se o range de datas passa a cobrir um único mês, força o periodo='mes' e
+  // ancora no YYYY-MM do filtro (auto drill-down).
   const filterSig = `${filters.filial}|${filters.vendedor}|${filters.inicio}|${filters.fim}`
+  const dateSig = `${filters.inicio}|${filters.fim}`
   const [prevSig, setPrevSig] = useState(filterSig)
+  const [prevDateSig, setPrevDateSig] = useState(dateSig)
   if (filterSig !== prevSig) {
     setPrevSig(filterSig)
-    setSelectedMonth(null)
-    setSelectedWeek(null)
+    const dateChanged = dateSig !== prevDateSig
+    if (dateChanged) setPrevDateSig(dateSig)
+    const ym = dateChanged ? sameMonthYM(filters.inicio, filters.fim) : null
+    if (ym) {
+      setPeriodo('mes')
+      setSelectedMonth(ym)
+      setSelectedWeek(null)
+    } else {
+      setSelectedMonth(null)
+      setSelectedWeek(null)
+    }
   }
 
   // Limpa `data` quando o período muda — o shape difere entre 'ano' ({mes,...})
@@ -154,6 +159,9 @@ export default function EvolucaoMensalChart({ filters }) {
     setPeriodo('mes')
   }
 
+  const fetchKey = `${periodo}|${selectedMonth || ''}|${selectedWeek || ''}|${filterSig}`
+  const loading = loadedKey !== fetchKey
+
   useEffect(() => {
     const ctrl = new AbortController()
     let url
@@ -167,10 +175,12 @@ export default function EvolucaoMensalChart({ filters }) {
     }
     fetch(url, { signal: ctrl.signal })
       .then(r => r.json())
-      .then(setData)
-      .catch(err => { if (err.name !== 'AbortError') console.error(err) })
+      .then(d => { setData(d); setLoadedKey(fetchKey) })
+      .catch(err => {
+        if (err.name !== 'AbortError') { console.error(err); setLoadedKey(fetchKey) }
+      })
     return () => ctrl.abort()
-  }, [filters.filial, filters.vendedor, filters.inicio, filters.fim, periodo, selectedMonth, selectedWeek])
+  }, [fetchKey, filters, periodo, selectedMonth, selectedWeek])
 
   // Valor atualmente exibido no seletor: prioriza a seleção explícita; senão,
   // deriva do próprio displayData (a âncora do backend define o período).
@@ -197,9 +207,12 @@ export default function EvolucaoMensalChart({ filters }) {
   const optionYear =
     periodo === 'mes' && currentMesValue
       ? Number(currentMesValue.slice(0, 4))
-      : periodo === 'semana' && currentSemanaValue
-      ? weekDominantYear(currentSemanaValue)
       : new Date().getFullYear()
+
+  const semanaStart = currentSemanaValue ? weekStart(currentSemanaValue) : ''
+  const semanaEndLabel = currentSemanaValue
+    ? `${currentSemanaValue.slice(8, 10)}/${currentSemanaValue.slice(5, 7)}`
+    : ''
 
   let semanaData = displayData
   if (periodo === 'semana' && displayData.length) {
@@ -237,17 +250,20 @@ export default function EvolucaoMensalChart({ filters }) {
             </select>
           )}
           {periodo === 'semana' && (
-            <select
-              className={styles.chartPeriodSelect}
-              value={currentSemanaValue}
-              onChange={e => setSelectedWeek(e.target.value)}
-              aria-label="Selecionar semana"
-            >
-              {!currentSemanaValue && <option value="" disabled>Carregando…</option>}
-              {weekOptions(optionYear).map(opt => (
-                <option key={opt.value} value={opt.value}>{opt.label}</option>
-              ))}
-            </select>
+            <>
+              <input
+                type="date"
+                className={styles.chartPeriodDate}
+                value={semanaStart}
+                onChange={e => {
+                  if (e.target.value) setSelectedWeek(weekEnd(e.target.value))
+                }}
+                aria-label="Selecionar semana"
+              />
+              {semanaEndLabel && (
+                <span className={styles.chartPeriodHint}>até {semanaEndLabel}</span>
+              )}
+            </>
           )}
         </div>
         <div className={styles.periodToggle} role="tablist">
@@ -266,8 +282,13 @@ export default function EvolucaoMensalChart({ filters }) {
         </div>
       </div>
       <div className={styles.chartWrapper}>
+        {loading && (
+          <div className={styles.spinnerOverlay} aria-live="polite" aria-busy="true">
+            <div className={`${styles.spinner} ${styles.spinnerSmall}`} role="status" aria-label="Carregando" />
+          </div>
+        )}
         {displayData.length === 0 ? (
-          <div className={styles.empty}>Sem dados no período</div>
+          <div className={styles.empty}>{loading ? '' : 'Sem dados no período'}</div>
         ) : periodo === 'ano' ? (
           <ResponsiveContainer width="100%" height="100%">
             <LineChart
