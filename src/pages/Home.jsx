@@ -3,16 +3,6 @@ import { NavLink, Outlet, useNavigate } from 'react-router-dom'
 import styles from './Home.module.css'
 
 
-function IconVendas() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z" />
-      <line x1="3" y1="6" x2="21" y2="6" />
-      <path d="M16 10a4 4 0 0 1-8 0" />
-    </svg>
-  )
-}
-
 function IconRelatorio() {
   return (
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
@@ -60,7 +50,6 @@ function IconChevronRight() {
 }
 
 const NAV_ITEMS = [
-  { to: 'vendas',       label: 'Vendas',       Icon: IconVendas },
   { to: 'relatorio',    label: 'Relatório',    Icon: IconRelatorio },
   { to: 'fornecedores', label: 'Fornecedores', Icon: IconFornecedores },
 ]
