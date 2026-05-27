@@ -103,6 +103,15 @@
   box-shadow: 0 0 0 2px rgba(94, 105, 209, 0.50);
 }
 
+.error {
+  font-family: 'SF Pro Display', -apple-system, system-ui, 'Segoe UI', Roboto, sans-serif;
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 1.40;
+  color: #f97070;
+  margin: 0;
+}
+
 .btnPrimary {
   margin-top: 4px;
   background-color: #5e6ad2;
